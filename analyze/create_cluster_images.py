@@ -5,6 +5,7 @@ from util import Util
 import numpy as np
 import pandas as pd
 from skimage import io as skio
+import skimage.transform
 import matplotlib.pyplot as plt
 import skimage
 from matplotlib.backends.backend_pdf import PdfPages
@@ -13,16 +14,16 @@ import matplotlib.patheffects as PathEffects
 class ClusterImagesCreator:
 
     @classmethod
-    def run(cls, out_path, _df, n_clusters=10, folder="../data/train/", cid_actual=True):
+    def run(cls, out_path, _df, cls_range, folder="../data/train/", cid_actual=True):
 
-        df_colors = pd.read_csv("a00_analyze/color_info.csv")
+        df_colors = pd.read_csv("analyze/color_info.csv")
 
         assert("file_name" in _df.columns)
         assert("cls" in _df.columns)
         assert("cid" in _df.columns)
 
         with PdfPages(out_path) as pdf:
-            for c in range(n_clusters):
+            for c in cls_range:
                 print "generating cluster {}".format(c)
 
                 df = _df[_df["cls"]==c]
@@ -68,4 +69,9 @@ class ClusterImagesCreator:
                         plt.close()
 
 if __name__ == "__main__":
-    pass
+
+    df = Util.read_csv("../model/feature/silhouette_cls_50_train.csv")
+    df_labels = Util.read_csv("../model/filenames_index_train.csv")
+    df = df.merge(df_labels, on="file_name")
+
+    ClusterImagesCreator.run("../model/feature/silhouette_train_public.pdf", df, range(11, 15), folder="../data/train/", cid_actual=True)
